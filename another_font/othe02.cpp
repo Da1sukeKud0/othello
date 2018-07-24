@@ -12,6 +12,18 @@ int masu[size][size];
 //2次元配列覚書 [9以上][]は0になるが[負][]は謎数字
 //C++ANDOR覚書 ABもしくはACを要求するときは(A||B&&C)ではなく((A||B)&&C)が正しい
 
+string toOmojiNum(int num){
+    if(num==1) return "１";
+    else if(num==2) return "２";
+    else if(num==3) return "３";
+    else if(num==4) return "４";
+    else if(num==5) return "５";
+    else if(num==6) return "６";
+    else if(num==7) return "７";
+    else if(num==8) return "８";
+    else if(num==9) return "９";
+    else return "０";
+}
 void init(){ //empty:0 black:1 white:2
 	turn=size*size-4;
 	masu[size][size]={};
@@ -62,8 +74,8 @@ othello::othello(int p){
 	else enst = 1;
 	display();
 	cout <<"あなたは";
-	if(p == 1){cout << "○ ";}
-	else{cout << "● ";}
+	if(p == 1){cout << "⚪️";}
+	else{cout << "⚫️";}
 	cout << "です どこに置く？" << endl;
 	//cliからの入力を受け付け、ルール的に石を置けるか判定
 	do{
@@ -306,30 +318,34 @@ void othello::sla(int x,int y){ //斜めが揃っているか
 }
 void othello::display(){
 	//盤面テンプレ
-	cout << "　｜";
-	for(int i=0;i<=size-1;i++){cout << setw(2) << i+1;}
+	//cout << "　｜";
+    cout << "　";
+	for(int i=0;i<=size-1;i++){cout << toOmojiNum(i+1);}
 	//３行目以降
-	cout << "｜" << endl;
+	//cout << "｜" << endl;
 	//cout << "　｜";
 	//for(int i=0;i<=7;i++){cout << "ー";}
 	//cout << "｜" << endl;
+    cout << endl;
 
 	for(int i=0;i<=size-1;i++){
-		cout << setw(2) << i+1;
-		cout << "｜";
+		cout << toOmojiNum(i+1);
+		//cout << "｜";
 		for(int j=0;j<=size-1;j++){
 			if(masu[i][j] == 0){cout << "　";}
-			if(masu[i][j] == 1){cout << "○";}
-			if(masu[i][j] == 2){cout << "●";}
+			if(masu[i][j] == 1){cout << "⚪️";}
+			if(masu[i][j] == 2){cout << "⚫️";}
 		}
-		cout << "｜" << endl;
+		//cout << "｜" << endl;
+        cout << endl;
 
 	}
 	//盤面テンプレ
-	cout << "　｜";
-	for(int i=0;i<=size-1;i++){cout << setw(2) << i+1;}
-	cout <<  "｜" << endl;
-
+	//cout << "　｜";
+    cout << "　";
+	for(int i=0;i<=size-1;i++){cout << toOmojiNum(i+1);}
+	//cout <<  "｜" << endl;
+    cout << endl;
 }
 void othello::calc(){ //石数と勝敗を表示
 	int blk = 0;
@@ -342,9 +358,9 @@ void othello::calc(){ //石数と勝敗を表示
 	}
 	display();
 	cout << endl;
-	cout << "● が" << whi << "個 ○ が" << blk << "個 よって";
-	if(blk > whi){ cout << "勝者:○ "<< endl;}
-	else if(blk < whi){ cout << "勝者:● "<< endl;}
+	cout << "⚫️が" << whi << "個 ⚪️が" << blk << "個 よって";
+	if(blk > whi){ cout << "勝者:⚪️"<< endl;}
+	else if(blk < whi){ cout << "勝者:⚫️"<< endl;}
 	else{ cout << "引き分け" << endl;}
 }
 int main(void){
