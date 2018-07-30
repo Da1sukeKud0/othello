@@ -6,12 +6,25 @@
 #include <algorithm>
 #include <ctype.h>
 using namespace std;
-const int size = 8;//何マス平方かの設定
+const int BoardSize = 8; //何マス平方かの設定
 int turn;
-int masu[size][size];
-//2次元配列覚書 [9以上][]は0になるが[負][]は謎数字
+int masu[BoardSize][BoardSize];
+//2次元配列覚書 [9以上][]は0になるが[負][]は謎数字になる
 //C++ANDOR覚書 ABもしくはACを要求するときは(A||B&&C)ではなく((A||B)&&C)が正しい
 
+void outputStoneImage(int pID){
+    if(pID == 1) cout << "⚪️";
+    else cout << "⚫️";
+}
+void init(){ //empty:0 black:1 white:2
+    turn=BoardSize*BoardSize-4;
+    masu[BoardSize][BoardSize]={};
+    int half = BoardSize/2;
+    masu[half-1][half-1] = 2;
+    masu[half-1][half] = 1;
+    masu[half][half-1] = 1;
+    masu[half][half] = 2;
+}
 string toOmojiNum(int num){
     if(num==1) return "１";
     else if(num==2) return "２";
@@ -24,16 +37,6 @@ string toOmojiNum(int num){
     else if(num==9) return "９";
     else return "０";
 }
-void init(){ //empty:0 black:1 white:2
-    turn=size*size-4;
-    masu[size][size]={};
-    int half = size/2;
-    masu[half-1][half-1] = 2;
-    masu[half-1][half] = 1;
-    masu[half][half-1] = 1;
-    masu[half][half] = 2;
-}
-
 bool stoiCheck(string s){
     try {
         stoi(s);
@@ -46,16 +49,13 @@ bool stoiCheck(string s){
 
 class othello{
     protected:
-        string input;
-        int v;
-        int h;
-        int que;
-        int status; //石を置くプレイヤー
-        int enst; //の敵プレイヤー
-        bool puten; //石を置けるかどうか(石を返せないと置けない)
+        int v; //縦の入力値
+        int h; //横の入力値
+        int myPID; //石を置くプレイヤー
+        int enemyPID; //の敵プレイヤー
+        bool placeable; //石を置けるかどうか(石を返せないと置けない)
     public:
-        othello(int p);
-        bool toryo;
+        othello(int pID);
         void console();
         bool validationCheck(int v,int h);
         void ver(int x,int y);
@@ -64,19 +64,17 @@ class othello{
         void display();
         void calc();
 };
-othello::othello(int p){
-    puten = false;
-    toryo = false;
-    status = p;
-    que = 1;
+othello::othello(int pID){
+    placeable = false;
+    myPID = pID;
+    int que = 1;
     //プレイヤーIDを設定し盤面を表示
-    if(status == 1) enst = 2;
-    else enst = 1;
+    if(myPID == 1) enemyPID = 2;
+    else enemyPID = 1;
     display();
     cout <<"あなたは";
-    if(p == 1){cout << "⚪️";}
-    else{cout << "⚫️";}
-    cout << "です どこに置く？((0,0)を指定すると投了)" << endl;
+    outputStoneImage(pID);
+    cout << "です どこに置く？ (0,0)を指定すると投了: " << endl;
     //cliからの入力を受け付け、ルール的に石を置けるか判定
     do{
         do console(); while(!validationCheck(v,h));
@@ -96,12 +94,12 @@ othello::othello(int p){
             ver(v-1,h-1);
             hor(v-1,h-1);
             sla(v-1,h-1);
-            if(puten == false){
+            if(placeable == false){
                 cout << "アホか。石を返せぬわ。もっかい選べ" <<endl;
                 que = 1;
             }
         }
-        else if(puten == false){
+        else if(placeable == false){
             cout << "もっかい選べ" <<endl;
             que = 1;
         }
@@ -135,205 +133,205 @@ bool othello::validationCheck(int v,int h){ //石が置けるかの判定
         }
         else return false;
     }
-    if(v>size+1){
+    if(v>BoardSize+1){
         cout << "枠外だよ。";
         return false;
     }
-    if(h>size+1){
+    if(h>BoardSize+1){
         cout << "枠外だよ。";
         return false;
     }
     if(masu[v-1][h-1] != 0){
         cout << "アホか。すでに置かれてる。もっかい選べ" << endl;
-        return false; //que=1
+        return false;
     }
     return true;
 }
 void othello::ver(int x,int y){ //縦が揃っているか
-    int fp=size;
-    int bp=size;
-    if((x == 0 || x == 1) && masu[x+1][y] == enst){
-        for(int i=size-1;i>=x+2;i--){
-            if(masu[i][y] == status){bp = i;}
+    int fp=BoardSize;
+    int bp=BoardSize;
+    if((x == 0 || x == 1) && masu[x+1][y] == enemyPID){
+        for(int i=BoardSize-1;i>=x+2;i--){
+            if(masu[i][y] == myPID){bp = i;}
         }
     }
-    else if((x == size-2 || x == size-1) && masu[x-1][y] == enst){
+    else if((x == BoardSize-2 || x == BoardSize-1) && masu[x-1][y] == enemyPID){
         for(int i=0;i<=x-2;i++){
-            if(masu[i][y] == status){fp = i;}
+            if(masu[i][y] == myPID){fp = i;}
         }
     }
     else{
-        if(masu[x-1][y] == enst){
+        if(masu[x-1][y] == enemyPID){
             for(int i=0;i<=x-2;i++){
-                if(masu[i][y] == status){fp = i;}
+                if(masu[i][y] == myPID){fp = i;}
             }
         }
-        if(masu[x+1][y] == enst){
-            for(int i=size-1;i>=x+2;i--){
-                if(masu[i][y] == status){bp = i;}
+        if(masu[x+1][y] == enemyPID){
+            for(int i=BoardSize-1;i>=x+2;i--){
+                if(masu[i][y] == myPID){bp = i;}
             }
         }
     }
     //fp~x,x~bp間が埋まるかのチェック
-    if(fp != size){
+    if(fp != BoardSize){
         int fpcheck=0;
         for(int i=fp+1;i<=x-2;i++){
-            if(masu[i][y] != enst){fpcheck = 1;} //bug03
+            if(masu[i][y] != enemyPID){fpcheck = 1;} //bug03
         }
         if(fpcheck == 0){
-            for(int i=fp+1;i<=x-1;i++){masu[i][y] = status;puten = true;}
+            for(int i=fp+1;i<=x-1;i++){masu[i][y] = myPID;placeable = true;}
         }
     }
-    if(bp != size){
+    if(bp != BoardSize){
         int bpcheck=0;
         for(int i=x+2;i<=bp-1;i++){
-            if(masu[i][y] != enst){bpcheck = 1;}  //bug03
+            if(masu[i][y] != enemyPID){bpcheck = 1;}  //bug03
         }
         if(bpcheck == 0){
-            for(int i=x+1;i<=bp-1;i++){masu[i][y] = status;puten = true;}
+            for(int i=x+1;i<=bp-1;i++){masu[i][y] = myPID;placeable = true;}
         }
     }
-    if(puten){masu[x][y] = status;}
+    if(placeable){masu[x][y] = myPID;}
 }
 void othello::hor(int x,int y){ //横が揃っているか
-    int fp=size;
-    int bp=size;
-    if((y == 0 || y == 1) && masu[x][y+1] == enst){
-        for(int i=size-1;i>=y+2;i--){
-            if(masu[x][i] == status){bp = i;}
+    int fp=BoardSize;
+    int bp=BoardSize;
+    if((y == 0 || y == 1) && masu[x][y+1] == enemyPID){
+        for(int i=BoardSize-1;i>=y+2;i--){
+            if(masu[x][i] == myPID){bp = i;}
         }
     }
-    else if((y == size-2 || y == size-1) && masu[x][y-1] == enst){
+    else if((y == BoardSize-2 || y == BoardSize-1) && masu[x][y-1] == enemyPID){
         for(int i=0;i<=y-2;i++){
-            if(masu[x][i] == status){fp = i;}
+            if(masu[x][i] == myPID){fp = i;}
         }
     }
     else{
-        if(masu[x][y-1] == enst){
+        if(masu[x][y-1] == enemyPID){
             for(int i=0;i<=y-2;i++){
-                if(masu[x][i] == status){fp = i;}
+                if(masu[x][i] == myPID){fp = i;}
             }
         }
-        if(masu[x][y+1] == enst){
-            for(int i=size-1;i>=y+2;i--){
-                if(masu[x][i] == status){bp = i;}
+        if(masu[x][y+1] == enemyPID){
+            for(int i=BoardSize-1;i>=y+2;i--){
+                if(masu[x][i] == myPID){bp = i;}
             }
         }
     }
     //fp~x,x~bp間が埋まるかのチェック
-    if(fp != size){
+    if(fp != BoardSize){
         int fpcheck=0;
         for(int i=fp+1;i<=y-2;i++){
-            if(masu[x][i] != enst){fpcheck = 1;} //bug03
+            if(masu[x][i] != enemyPID){fpcheck = 1;} //bug03
         }
         if(fpcheck == 0){
-            for(int i=fp+1;i<=y-1;i++){masu[x][i] = status;puten = true;}
+            for(int i=fp+1;i<=y-1;i++){masu[x][i] = myPID;placeable = true;}
         }
     }
-    if(bp != size){
+    if(bp != BoardSize){
         int bpcheck=0;
         for(int i=y+2;i<=bp-1;i++){
-            if(masu[x][i] != enst){bpcheck = 1;} //bug03
+            if(masu[x][i] != enemyPID){bpcheck = 1;} //bug03
         }
         if(bpcheck == 0){
-            for(int i=y+1;i<=bp-1;i++){masu[x][i] = status;puten = true;}
+            for(int i=y+1;i<=bp-1;i++){masu[x][i] = myPID;placeable = true;}
         }
     }
-    if(puten){masu[x][y] = status;}
+    if(placeable){masu[x][y] = myPID;}
 }
 void othello::sla(int x,int y){ //斜めが揃っているか
-    int fpr=size;
-    int fpl=size;
-    int bpr=size;
-    int bpl=size;
+    int fpr=BoardSize;
+    int fpl=BoardSize;
+    int bpr=BoardSize;
+    int bpl=BoardSize;
     //int max = (14-x-y)/2;
-    if(x <= 1 && y <= 1 && masu[x+1][y+1] == enst){
-        for(int i=size-1;i>=2;i--){
-            if(masu[x+i][y+i] == status){bpl = i;}
+    if(x <= 1 && y <= 1 && masu[x+1][y+1] == enemyPID){
+        for(int i=BoardSize-1;i>=2;i--){
+            if(masu[x+i][y+i] == myPID){bpl = i;}
         }
     }
-    else if(x <= 1 && y >= size-2 && masu[x+1][y-1] == enst){
-        for(int i=size-1;i>=2;i--){
-            if(masu[x+i][y-i] == status){bpr = i;}
+    else if(x <= 1 && y >= BoardSize-2 && masu[x+1][y-1] == enemyPID){
+        for(int i=BoardSize-1;i>=2;i--){
+            if(masu[x+i][y-i] == myPID){bpr = i;}
         }
     }
-    else if(x >= size-2 && y <= 1 && masu[x-1][y+1] == enst){
-        for(int i=size-1;i>=2;i--){
-            if(masu[x-i][y+i] == status){fpr = i;}
+    else if(x >= BoardSize-2 && y <= 1 && masu[x-1][y+1] == enemyPID){
+        for(int i=BoardSize-1;i>=2;i--){
+            if(masu[x-i][y+i] == myPID){fpr = i;}
         }
     }
-    else if(x >= size-2 && y >= size-2 && masu[x-1][y-1] == enst){
-        for(int i=size-1;i>=2;i--){
-            if(masu[x-i][y-i] == status){fpl = i;}
+    else if(x >= BoardSize-2 && y >= BoardSize-2 && masu[x-1][y-1] == enemyPID){
+        for(int i=BoardSize-1;i>=2;i--){
+            if(masu[x-i][y-i] == myPID){fpl = i;}
         }
     }
     else{
-        if(masu[x+1][y+1] == enst){
-            for(int i=size-1;i>=2;i--){
-                if(masu[x+i][y+i] == status){bpl = i;}
+        if(masu[x+1][y+1] == enemyPID){
+            for(int i=BoardSize-1;i>=2;i--){
+                if(masu[x+i][y+i] == myPID){bpl = i;}
             }
         }
-        if(masu[x+1][y-1] == enst){
-            for(int i=size-1;i>=2;i--){
-                if(masu[x+i][y-i] == status){bpr = i;}
+        if(masu[x+1][y-1] == enemyPID){
+            for(int i=BoardSize-1;i>=2;i--){
+                if(masu[x+i][y-i] == myPID){bpr = i;}
             }
         }
-        if(masu[x-1][y+1] == enst){
-            for(int i=size-1;i>=2;i--){
-                if(masu[x-i][y+i] == status){fpr = i;}
+        if(masu[x-1][y+1] == enemyPID){
+            for(int i=BoardSize-1;i>=2;i--){
+                if(masu[x-i][y+i] == myPID){fpr = i;}
             }
         }
-        if(masu[x-1][y-1] == enst){
-            for(int i=size-1;i>=2;i--){
-                if(masu[x-i][y-i] == status){fpl = i;}
+        if(masu[x-1][y-1] == enemyPID){
+            for(int i=BoardSize-1;i>=2;i--){
+                if(masu[x-i][y-i] == myPID){fpl = i;}
             }
         }
 
     }
     //pointer~x間が埋まるかのチェック
-    if(fpr != size){
+    if(fpr != BoardSize){
         int fprcheck=0;
         for(int i=2;i<=fpr-1;i++){
-            if(masu[x-i][y+i] != enst){fprcheck = 1;}
+            if(masu[x-i][y+i] != enemyPID){fprcheck = 1;}
         }
         if(fprcheck == 0){
-            for(int i=1;i<=fpr-1;i++){masu[x-i][y+i] = status;puten = true;}
+            for(int i=1;i<=fpr-1;i++){masu[x-i][y+i] = myPID;placeable = true;}
         }
     }
-    if(fpl != size){
+    if(fpl != BoardSize){
         int fplcheck=0;
         for(int i=2;i<=fpl-1;i++){
-            if(masu[x-i][y-i] != enst){fplcheck = 1;}
+            if(masu[x-i][y-i] != enemyPID){fplcheck = 1;}
         }
         if(fplcheck == 0){
-            for(int i=1;i<=fpl-1;i++){masu[x-i][y-i] = status;puten = true;}
+            for(int i=1;i<=fpl-1;i++){masu[x-i][y-i] = myPID;placeable = true;}
         }
     }
-    if(bpr != size){
+    if(bpr != BoardSize){
         int bprcheck=0;
         for(int i=2;i<=bpr-1;i++){
-            if(masu[x+i][y-i] != enst){bprcheck = 1;}
+            if(masu[x+i][y-i] != enemyPID){bprcheck = 1;}
         }
         if(bprcheck == 0){
-            for(int i=1;i<=bpr-1;i++){masu[x+i][y-i] = status;puten = true;}
+            for(int i=1;i<=bpr-1;i++){masu[x+i][y-i] = myPID;placeable = true;}
         }
     }
-    if(bpl != size){
+    if(bpl != BoardSize){
         int bplcheck=0;
         for(int i=2;i<=bpl-1;i++){
-            if(masu[x+i][y+i] != enst){bplcheck = 1;}
+            if(masu[x+i][y+i] != enemyPID){bplcheck = 1;}
         }
         if(bplcheck == 0){
-            for(int i=1;i<=bpl-1;i++){masu[x+i][y+i] = status;puten = true;}
+            for(int i=1;i<=bpl-1;i++){masu[x+i][y+i] = myPID;placeable = true;}
         }
     }
-    if(puten){masu[x][y] = status;}
+    if(placeable){masu[x][y] = myPID;}
 }
 void othello::display(){
     //盤面テンプレ
     //cout << "　｜";
     cout << "　";
-    for(int i=0;i<=size-1;i++){cout << toOmojiNum(i+1);}
+    for(int i=0;i<=BoardSize-1;i++){cout << toOmojiNum(i+1);}
     //３行目以降
     //cout << "｜" << endl;
     //cout << "　｜";
@@ -341,10 +339,10 @@ void othello::display(){
     //cout << "｜" << endl;
     cout << endl;
 
-    for(int i=0;i<=size-1;i++){
+    for(int i=0;i<=BoardSize-1;i++){
         cout << toOmojiNum(i+1);
         //cout << "｜";
-        for(int j=0;j<=size-1;j++){
+        for(int j=0;j<=BoardSize-1;j++){
             if(masu[i][j] == 0){cout << "　";}
             if(masu[i][j] == 1){cout << "⚪️";}
             if(masu[i][j] == 2){cout << "⚫️";}
@@ -356,15 +354,15 @@ void othello::display(){
     //盤面テンプレ
     //cout << "　｜";
     cout << "　";
-    for(int i=0;i<=size-1;i++){cout << toOmojiNum(i+1);}
+    for(int i=0;i<=BoardSize-1;i++){cout << toOmojiNum(i+1);}
     //cout <<  "｜" << endl;
     cout << endl;
 }
 void othello::calc(){ //石数と勝敗を表示
     int blk = 0;
     int whi = 0;
-    for(int i=0;i<size;i++){
-        for(int j=0;j<size;j++){
+    for(int i=0;i<BoardSize;i++){
+        for(int j=0;j<BoardSize;j++){
             if(masu[i][j] == 1){blk++;}
             else if(masu[i][j] == 2){whi++;}
         }
