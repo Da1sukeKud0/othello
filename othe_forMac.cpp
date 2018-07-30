@@ -343,12 +343,12 @@ void othello::display(){
         cout << toOmojiNum(i+1);
         //cout << "｜";
         for(int j=0;j<=BoardSize-1;j++){
-            if(masu[i][j] == 0){cout << "　";}
+            if(masu[i][j] == 0){cout << "・";}
             if(masu[i][j] == 1){cout << "⚪️";}
             if(masu[i][j] == 2){cout << "⚫️";}
         }
         //cout << "｜" << endl;
-        cout << endl;
+        cout << toOmojiNum(i+1) << endl;
 
     }
     //盤面テンプレ
