@@ -54,6 +54,7 @@ class othello{
         int myPID; //石を置くプレイヤー
         int enemyPID; //の敵プレイヤー
         bool placeable; //石を置けるかどうか(石を返せないと置けない)
+        int revarsible[BoardSize][BoardSize];
     public:
         othello(int pID);
         void console();
@@ -110,14 +111,14 @@ void othello::console(){ //cliの入力を受け付ける。数字以外の場�
     cout << "縦の座標を入力:";
     cin >> sv;
     while(!stoiCheck(sv)){
-        cout << "もう一度入力:";
+        cout << "もう一度縦の座標を入力:";
         cin >> sv;
     }
     v = stoi(sv);
     cout << "横の座標を入力:";
     cin >> sh;
     while(!stoiCheck(sh)){
-        cout << "もう一度入力:";
+        cout << "もう一度横の座標を入力:";
         cin >> sh;
     }
     h = stoi(sh);
@@ -286,7 +287,6 @@ void othello::sla(int x,int y){ //斜めが揃っているか
                 if(masu[x-i][y-i] == myPID){fpl = i;}
             }
         }
-
     }
     //pointer~x間が埋まるかのチェック
     if(fpr != BoardSize){
